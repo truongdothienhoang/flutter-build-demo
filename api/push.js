@@ -1,4 +1,5 @@
-import fetch from 'node-fetch';
+const fetch = global.fetch || ((...args) => import('node-fetch').then(({ default: f }) => f(...args)));
+
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // or hardcode for testing
 const REPO_OWNER = 'telberiarbeit';
