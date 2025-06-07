@@ -1,7 +1,8 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Flutter Push API
   version: 1.0.0
+  description: An API to push Flutter code to a GitHub repository
 servers:
   - url: https://flutter-build-demo.vercel.app
 paths:
