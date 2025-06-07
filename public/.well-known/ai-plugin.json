@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Flutter Code Push",
+  "name_for_model": "flutterPushPlugin",
+  "description_for_human": "Pushes Flutter code to GitHub and triggers build.",
+  "description_for_model": "Use this plugin to push Flutter code to a GitHub repo and build it.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://flutter-build-demo.vercel.app/openapi.yaml"
+  },
+  "logo_url": "https://flutter-build-demo.vercel.app/logo.png",
+  "contact_email": "your@email.com",
+  "legal_info_url": "https://yourdomain.com/legal"
+}
