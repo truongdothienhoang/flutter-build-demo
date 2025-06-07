@@ -1,5 +1,1 @@
-
-    void main() {
-        print('Hello Flutter!');
-    }
-    
+void main() { print('This should now build!'); }
