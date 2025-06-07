@@ -1,0 +1,23 @@
+name: Flutter Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 'stable'
+    - run: flutter pub get
+    - run: flutter build web --release
+    - run: ls build/web
+    - uses: actions/upload-artifact@v3
+      with:
+        name: flutter-web-build
+        path: build/web
