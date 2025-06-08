@@ -1,16 +1,14 @@
-// This is a simple serverless function example
-let latestDeployment = {
-  status: "pending",
-  deploymentUrl: null,
-  state: "BUILDING"
-};
+// api/deployment-status.js
 
-// This would normally be updated by your webhook handler when deployment finishes
-// For example purposes, we just return the current object
+let deploymentInfo = {
+  status: "success",
+  deploymentUrl: "https://flutter-build-demo-git-web-build-flutterpipes-projects.vercel.app",
+  state: "READY",
+};
 
 export default function handler(req, res) {
   if (req.method === "GET") {
-    res.status(200).json(latestDeployment);
+    res.status(200).json(deploymentInfo);
   } else {
     res.status(405).json({ error: "Method not allowed" });
   }
