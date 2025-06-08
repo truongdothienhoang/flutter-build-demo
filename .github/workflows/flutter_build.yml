@@ -14,13 +14,28 @@ jobs:
 
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.1'  # ✅ Use specific version
+          flutter-version: 'stable'
 
       - run: flutter pub get
-      - run: flutter build web --release
-      - run: ls build/web
 
+      # Build Web App
+      - run: flutter build web --release
+      
+      # Build Android APK (can add iOS similarly if you want)
+      - run: flutter build apk --release
+
+      # List output files for debugging
+      - run: ls build/web
+      - run: ls build/app/outputs/flutter-apk/
+
+      # Upload web build as artifact
       - uses: actions/upload-artifact@v4
         with:
           name: flutter-web-build
           path: build/web
+
+      # Upload APK build as artifact
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flutter-apk-build
+          path: build/app/outputs/flutter-apk/app-release.apk
