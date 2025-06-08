@@ -7,27 +7,28 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  void _handleButtonClick(String label) {
-    print('Button ' + label + ' clicked');
-  }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(title: const Text('Two Button App')),
+        appBar: AppBar(title: const Text('Three Buttons App')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () => _handleButtonClick('1'),
+                onPressed: () => print('Button 1 pressed'),
                 child: const Text('Button 1'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () => _handleButtonClick('2'),
+                onPressed: () => print('Button 2 pressed'),
                 child: const Text('Button 2'),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => print('Button 3 pressed'),
+                child: const Text('Button 3'),
               ),
             ],
           ),
