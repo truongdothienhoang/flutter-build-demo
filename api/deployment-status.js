@@ -23,7 +23,10 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!data.deployments || data.deployments.length === 0) {
-      return res.status(404).json({ error: 'No deployments found' });
+      return res.status(200).json({
+        status: 'NO_DEPLOYMENT',
+        message: "There's still no active deployment found yet. It might be that the deployment hasn't started or hasn't been registered. If you'd like, I can try to re-trigger the deployment or assist in another way. Let me know how you'd like to proceed!",
+      });
     }
 
     const latestDeployment = data.deployments[0];
@@ -36,7 +39,7 @@ export default async function handler(req, res) {
     } else {
       return res.status(200).json({
         status: latestDeployment.state,
-        message: 'Deployment is not ready yet',
+        message: "There's still no active deployment found yet. It might be that the deployment hasn't started or hasn't been registered. If you'd like, I can try to re-trigger the deployment or assist in another way. Let me know how you'd like to proceed!",
       });
     }
   } catch (error) {
