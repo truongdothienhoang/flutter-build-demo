@@ -1,32 +1,16 @@
-import { useState } from "react";
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 
-export default function App() {
-  const initialColors = ["red", "green", "blue"];
-  const [buttonColors, setButtonColors] = useState(initialColors);
-
-  const changeColor = (index: number) => {
-    const newColors = [...buttonColors];
-    const randomColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
-    newColors[index] = randomColor;
-    setButtonColors(newColors);
-  };
+export default function HelloWorldApp() {
+  const [message, setMessage] = useState("");
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-      <h1 className="text-4xl font-bold">Hello World</h1>
-      <div className="flex space-x-4">
-        {buttonColors.map((color, index) => (
-          <Button
-            key={index}
-            style={{ backgroundColor: color }}
-            onClick={() => changeColor(index)}
-            className="text-white"
-          >
-            Button {index + 1}
-          </Button>
-        ))}
+    <div className="flex flex-col items-center justify-center h-screen space-y-4">
+      <div className="space-x-4">
+        <Button onClick={() => setMessage("Hello from Button 1!")}>Button 1</Button>
+        <Button onClick={() => setMessage("Hello from Button 2!")}>Button 2</Button>
       </div>
+      <p className="text-xl mt-4">{message}</p>
     </div>
   );
 }
