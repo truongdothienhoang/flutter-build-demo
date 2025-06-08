@@ -4,7 +4,7 @@ const fetch = global.fetch || ((...args) =>
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Or hardcode for now
 const REPO_OWNER = 'telberiaarbeit';
 const REPO_NAME = 'flutter-build-demo';
-const BRANCH = 'main';
+const BRANCH = 'web-build';
 const FILE_PATH = 'lib/main.dart';
 
 export default async function handler(req, res) {
