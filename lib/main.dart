@@ -1,105 +1,67 @@
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
 
-void main() {
-  runApp(const TodoApp());
+late List<CameraDescription> cameras;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  cameras = await availableCameras();
+  runApp(const MyApp());
 }
 
-class TodoApp extends StatelessWidget {
-  const TodoApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ToDo App',
-      home: TodoHomePage(),
+      title: 'Camera App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: const CameraPage(),
     );
   }
 }
 
-class TodoHomePage extends StatefulWidget {
+class CameraPage extends StatefulWidget {
+  const CameraPage({super.key});
+
   @override
-  _TodoHomePageState createState() => _TodoHomePageState();
+  State<CameraPage> createState() => _CameraPageState();
 }
 
-class _TodoHomePageState extends State<TodoHomePage> {
-  final List<_TodoItem> _items = [];
-  final TextEditingController _controller = TextEditingController();
+class _CameraPageState extends State<CameraPage> {
+  late CameraController _controller;
+  bool _isInitialized = false;
 
-  void _addTodoItem(String task) {
-    if (task.isNotEmpty) {
-      setState(() {
-        _items.add(_TodoItem(task));
-      });
-      _controller.clear();
-    }
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
   }
 
-  void _toggleDone(int index) {
+  Future<void> _initializeCamera() async {
+    _controller = CameraController(cameras[0], ResolutionPreset.medium);
+    await _controller.initialize();
     setState(() {
-      _items[index].isDone = !_items[index].isDone;
+      _isInitialized = true;
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Meine ToDo Liste'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Neue Aufgabe',
-                    ),
-                    onSubmitted: _addTodoItem,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () => _addTodoItem(_controller.text),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  return ListTile(
-                    title: Text(
-                      item.title,
-                      style: TextStyle(
-                        decoration: item.isDone
-                            ? TextDecoration.lineThrough
-                            : TextDecoration.none,
-                      ),
-                    ),
-                    trailing: Checkbox(
-                      value: item.isDone,
-                      onChanged: (_) => _toggleDone(index),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      appBar: AppBar(title: const Text('Camera App')),
+      body: Center(
+        child: _isInitialized
+            ? CameraPreview(_controller)
+            : const CircularProgressIndicator(),
       ),
     );
   }
-}
-
-class _TodoItem {
-  final String title;
-  bool isDone;
-
-  _TodoItem(this.title, {this.isDone = false});
 }
