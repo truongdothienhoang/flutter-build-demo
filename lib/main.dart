@@ -1,53 +1,32 @@
-import 'package:flutter/material.dart';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
-void main() => runApp(MyApp());
+export default function App() {
+  const initialColors = ["red", "green", "blue"];
+  const [buttonColors, setButtonColors] = useState(initialColors);
 
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hello World App',
-      home: HelloWorldScreen(),
-    );
-  }
-}
+  const changeColor = (index: number) => {
+    const newColors = [...buttonColors];
+    const randomColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+    newColors[index] = randomColor;
+    setButtonColors(newColors);
+  };
 
-class HelloWorldScreen extends StatefulWidget {
-  @override
-  _HelloWorldScreenState createState() => _HelloWorldScreenState();
-}
-
-class _HelloWorldScreenState extends State<HelloWorldScreen> {
-  String _message = 'Hello World';
-
-  void _updateMessage() {
-    setState(() {
-      _message = 'Today is a great day';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Hello World App'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              _message,
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _updateMessage,
-              child: Text('Click Me'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+      <h1 className="text-4xl font-bold">Hello World</h1>
+      <div className="flex space-x-4">
+        {buttonColors.map((color, index) => (
+          <Button
+            key={index}
+            style={{ backgroundColor: color }}
+            onClick={() => changeColor(index)}
+            className="text-white"
+          >
+            Button {index + 1}
+          </Button>
+        ))}
+      </div>
+    </div>
+  );
 }
