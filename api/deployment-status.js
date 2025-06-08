@@ -28,10 +28,17 @@ export default async function handler(req, res) {
 
     const latestDeployment = data.deployments[0];
 
-    res.status(200).json({
-      status: latestDeployment.state,
-      deploymentUrl: `https://${latestDeployment.url}`,
-    });
+    if (latestDeployment.state === 'READY') {
+      return res.status(200).json({
+        status: 'READY',
+        deploymentUrl: `https://${latestDeployment.url}`,
+      });
+    } else {
+      return res.status(200).json({
+        status: latestDeployment.state,
+        message: 'Deployment is not ready yet',
+      });
+    }
   } catch (error) {
     console.error('Vercel API error:', error);
     res.status(500).json({ error: 'Failed to fetch deployment status' });
