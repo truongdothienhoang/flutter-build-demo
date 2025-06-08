@@ -1,41 +1,38 @@
-name: Flutter Build
+name: Flutter Web Build & Deploy
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on pushes to main branch
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout source code
+        uses: actions/checkout@v3
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: 'stable'
 
-      - run: flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-      # Build Web App
-      - run: flutter build web --release
-      
-      # Build Android APK (can add iOS similarly if you want)
-      - run: flutter build apk --release
+      - name: Build Flutter Web
+        run: flutter build web --release
 
-      # List output files for debugging
-      - run: ls build/web
-      - run: ls build/app/outputs/flutter-apk/
-
-      # Upload web build as artifact
-      - uses: actions/upload-artifact@v4
-        with:
-          name: flutter-web-build
-          path: build/web
-
-      # Upload APK build as artifact
-      - uses: actions/upload-artifact@v4
-        with:
-          name: flutter-apk-build
-          path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Prepare deployment branch
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git clone --depth 1 --branch web-build https://github.com/${{ github.repository }} web-build || \
+          git clone https://github.com/${{ github.repository }} web-build
+          rm -rf web-build/*
+          cp -r build/web/* web-build/
+          cd web-build
+          git add --all
+          git commit -m "Deploy Flutter web build from GitHub Actions [skip ci]" || echo "No changes to commit"
+          git push origin web-build --force
