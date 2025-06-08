@@ -1,16 +1,38 @@
-import { useState } from 'react';
-import { Button } from "@/components/ui/button";
+import 'package:flutter/material.dart';
 
-export default function HelloWorldApp() {
-  const [message, setMessage] = useState("");
+void main() {
+  runApp(const MyApp());
+}
 
-  return (
-    <div className="flex flex-col items-center justify-center h-screen space-y-4">
-      <div className="space-x-4">
-        <Button onClick={() => setMessage("Hello from Button 1!")}>Button 1</Button>
-        <Button onClick={() => setMessage("Hello from Button 2!")}>Button 2</Button>
-      </div>
-      <p className="text-xl mt-4">{message}</p>
-    </div>
-  );
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  void _handleButtonClick(String label) {
+    print('Button ' + label + ' clicked');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Two Button App')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => _handleButtonClick('1'),
+                child: const Text('Button 1'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => _handleButtonClick('2'),
+                child: const Text('Button 2'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
