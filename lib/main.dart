@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
+import 'dart:html' as html;
+import 'dart:ui' as ui;
 
-late List<CameraDescription> cameras;
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  cameras = await availableCameras();
+void main() {
   runApp(const MyApp());
 }
 
@@ -14,54 +11,35 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Camera App',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const CameraPage(),
+    return const MaterialApp(
+      home: CameraWeb(),
     );
   }
 }
 
-class CameraPage extends StatefulWidget {
-  const CameraPage({super.key});
-
-  @override
-  State<CameraPage> createState() => _CameraPageState();
-}
-
-class _CameraPageState extends State<CameraPage> {
-  late CameraController _controller;
-  bool _isInitialized = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    _controller = CameraController(cameras[0], ResolutionPreset.medium);
-    await _controller.initialize();
-    setState(() {
-      _isInitialized = true;
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+class CameraWeb extends StatelessWidget {
+  const CameraWeb({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final video = html.VideoElement()
+      ..width = 640
+      ..height = 480
+      ..autoplay = true;
+
+    html.window.navigator.mediaDevices?.getUserMedia({'video': true}).then((stream) {
+      video.srcObject = stream;
+    });
+
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(
+      'camera-view',
+      (int viewId) => video,
+    );
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Camera App')),
-      body: Center(
-        child: _isInitialized
-            ? CameraPreview(_controller)
-            : const CircularProgressIndicator(),
-      ),
+      appBar: AppBar(title: const Text('Web Kamera')),
+      body: const HtmlElementView(viewType: 'camera-view'),
     );
   }
 }
