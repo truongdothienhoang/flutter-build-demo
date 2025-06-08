@@ -1,101 +1,61 @@
 import 'package:flutter/material.dart';
+import 'dart:html' as html;
 
 void main() {
-  runApp(const TodoApp());
+  runApp(const CameraApp());
 }
 
-class TodoApp extends StatelessWidget {
-  const TodoApp({super.key});
+class CameraApp extends StatelessWidget {
+  const CameraApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'To-Do App',
-      home: TodoList(),
+    return const MaterialApp(
+      home: CameraPage(),
     );
   }
 }
 
-class TodoList extends StatefulWidget {
+class CameraPage extends StatefulWidget {
+  const CameraPage({super.key});
+
   @override
-  State<TodoList> createState() => _TodoListState();
+  State<CameraPage> createState() => _CameraPageState();
 }
 
-class _TodoListState extends State<TodoList> {
-  final List<TodoItem> _items = [];
-  final TextEditingController _controller = TextEditingController();
+class _CameraPageState extends State<CameraPage> {
+  late html.VideoElement _videoElement;
+  late Widget _videoWidget;
 
-  void _addTodo() {
-    final text = _controller.text.trim();
-    if (text.isNotEmpty) {
-      setState(() {
-        _items.add(TodoItem(title: text));
-        _controller.clear();
-      });
-    }
-  }
+  @override
+  void initState() {
+    super.initState();
 
-  void _toggleDone(int index) {
-    setState(() {
-      _items[index].isDone = !_items[index].isDone;
+    _videoElement = html.VideoElement()
+      ..autoplay = true
+      ..style.width = '100%'
+      ..style.height = '100%';
+
+    html.window.navigator.mediaDevices?.getUserMedia({'video': true}).then((stream) {
+      _videoElement.srcObject = stream;
     });
+
+    _videoWidget = HtmlElementView(viewType: 'cameraElement');
+    // ignore: undefined_prefixed_name
+    html.platformViewRegistry.registerViewFactory('cameraElement', (int viewId) => _videoElement);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('To-Do Liste')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      labelText: 'Neue Aufgabe',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _addTodo,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  return ListTile(
-                    title: Text(
-                      item.title,
-                      style: TextStyle(
-                        decoration: item.isDone ? TextDecoration.lineThrough : null,
-                      ),
-                    ),
-                    trailing: Checkbox(
-                      value: item.isDone,
-                      onChanged: (_) => _toggleDone(index),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+      appBar: AppBar(title: const Text('Kamera Ansicht')),
+      body: Center(
+        child: SizedBox(
+          width: 640,
+          height: 480,
+          child: _videoWidget,
         ),
       ),
     );
   }
-}
-
-class TodoItem {
-  String title;
-  bool isDone;
-
-  TodoItem({required this.title, this.isDone = false});
 }
