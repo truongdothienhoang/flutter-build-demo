@@ -27,6 +27,8 @@ jobs:
       - name: Prepare deployment branch
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
