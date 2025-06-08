@@ -5,11 +5,14 @@ const VERCEL_TOKEN = process.env.VERCEL_TOKEN; // Your Vercel personal token
 const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID; // Your Vercel project ID
 
 export default async function handler(req, res) {
+  console.log('VERCEL_TOKEN:', VERCEL_TOKEN ? 'set' : 'missing');
+  console.log('VERCEL_PROJECT_ID:', VERCEL_PROJECT_ID || 'missing');
+
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Only GET allowed' });
   }
 
-  const url = `https://api.vercel.com/v13/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1`;
+  const url = `https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1`;
 
   try {
     const response = await fetch(url, {
