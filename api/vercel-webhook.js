@@ -1,17 +1,30 @@
+import crypto from 'crypto';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).end();
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const payload = req.body;
+  const secret = process.env.VERCEL_WEBHOOK_SECRET;
+  const signature = req.headers['x-vercel-signature'];
 
-  // Extract the deployment URL from Vercel webhook payload
-  const deploymentUrl = payload?.url;
+  if (!signature) {
+    return res.status(401).json({ error: 'No signature provided' });
+  }
 
-  // TODO: Store deploymentUrl somewhere (in-memory, database, or trigger ChatGPT plugin response)
+  const payload = JSON.stringify(req.body);
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(payload);
+  const digest = hmac.digest('hex');
 
-  // Respond quickly to acknowledge
-  res.status(200).json({ received: true, url: deploymentUrl });
+  if (signature !== digest) {
+    return res.status(401).json({ error: 'Invalid signature' });
+  }
 
-  // Optionally, trigger ChatGPT notification here (call OpenAI API or your plugin logic)
+  // Signature verified; process the deployment payload
+  const deploymentUrl = req.body.url;
+
+  // TODO: Store deploymentUrl or notify ChatGPT plugin here
+
+  res.status(200).json({ message: 'Webhook received', url: deploymentUrl });
 }
