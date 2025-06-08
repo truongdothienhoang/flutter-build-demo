@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only GET allowed' });
   }
 
-  const url = `https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1`;
+  const url = `https://api.vercel.com/v13/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1`;
 
   try {
     const response = await fetch(url, {
