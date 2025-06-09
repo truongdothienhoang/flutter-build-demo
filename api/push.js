@@ -5,7 +5,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Or hardcode for now
 const REPO_OWNER = 'telberiaarbeit';
 const REPO_NAME = 'flutter-build-demo';
 const BRANCH = 'web-build';
-const FILE_PATH = 'lib/main.dart';
+const FILE_PATH = 'main.dart';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
