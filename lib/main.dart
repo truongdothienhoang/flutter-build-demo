@@ -10,28 +10,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hoang Status',
-      home: const HomeScreen(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.lightGreen[50],
-      body: const Center(
-        child: Text(
-          'Hoang is online!',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-          ),
+      home: Scaffold(
+        appBar: AppBar(title: const Text('Hello World App')),
+        body: const Center(
+          child: Text('Hello, Flutter Web!'),
         ),
       ),
     );
