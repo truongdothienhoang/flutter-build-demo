@@ -1,15 +1,16 @@
 const fetch = global.fetch || ((...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args)));
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN; // Make sure this is set in Vercel
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = 'telberiaarbeit';
 const REPO_NAME = 'flutter-build-demo';
-const BRANCH = 'web-build';
+const BRANCH = 'main';
 const FILE_PATH = 'lib/main.dart';
 
 const HEADERS = {
   Authorization: `token ${GITHUB_TOKEN}`,
-  Accept: 'application/vnd.github+json'
+  Accept: 'application/vnd.github+json',
+  'Cache-Control': 'no-cache'
 };
 
 const FILE_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}?ref=${BRANCH}`;
@@ -25,20 +26,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Step 1: Get latest SHA
+    // 🧠 Step 1: Force fetch latest SHA (disable caching)
+    const shaRes = await fetch(FILE_URL + `&t=${Date.now()}`, { headers: HEADERS });
     let sha = null;
-    const shaRes = await fetch(FILE_URL, { headers: HEADERS });
+
     if (shaRes.ok) {
       const data = await shaRes.json();
       sha = data.sha;
+    } else if (shaRes.status !== 404) {
+      const err = await shaRes.text();
+      return res.status(500).json({ error: 'Failed to fetch file SHA', details: err });
     }
 
-    // Step 2: Push new code (force overwrite)
+    // 🧠 Step 2: Build push payload
     const body = {
-      message: 'Update main.dart',
+      message: 'Force update lib/main.dart',
       content: Buffer.from(code).toString('base64'),
       branch: BRANCH,
-      ...(sha ? { sha } : {}) // Only include sha if found
+      ...(sha ? { sha } : {}) // only include sha if we found it
     };
 
     const pushRes = await fetch(FILE_URL, {
@@ -61,9 +66,8 @@ export default async function handler(req, res) {
       });
     }
   } catch (err) {
-    console.error('Push failed:', err);
     return res.status(500).json({
-      error: 'Server error',
+      error: 'Unexpected server error',
       message: err.message
     });
   }
