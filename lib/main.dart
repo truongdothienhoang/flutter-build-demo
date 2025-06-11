@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+const code = `import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,12 +10,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Hello World App',
       home: Scaffold(
-        appBar: AppBar(title: const Text('Hello World App')),
+        appBar: AppBar(
+          title: const Text('Hello World'),
+        ),
         body: const Center(
-          child: Text('Hello, Flutter Web!'),
+          child: Text(
+            'Hello, Flutter Web!',
+            style: TextStyle(fontSize: 24),
+          ),
         ),
       ),
     );
   }
-}
+}`;
