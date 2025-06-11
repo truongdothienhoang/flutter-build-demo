@@ -4,8 +4,8 @@ const fetch = global.fetch || ((...args) =>
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = 'telberiaarbeit';
 const REPO_NAME = 'flutter-build-demo';
-const BRANCH = 'main';
-const FILE_PATH = 'lib/main.dart';
+const BRANCH = 'web-build';
+const FILE_PATH = 'lib/main1.dart'; // ✅ Updated file path
 const FILE_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
 export default async function handler(req, res) {
@@ -27,27 +27,26 @@ export default async function handler(req, res) {
   let sha = null;
 
   try {
-    // ✅ Get the latest SHA from the correct branch
+    // ✅ Fetch latest SHA for main1.dart
     const shaUrl = `${FILE_URL}?ref=${BRANCH}&t=${Date.now()}`;
     const shaRes = await fetch(shaUrl, { headers });
 
     if (shaRes.ok) {
       const data = await shaRes.json();
       sha = data.sha;
-      console.log('✅ Latest SHA:', sha); // Log the correct SHA
+      console.log('✅ Latest SHA:', sha);
     } else if (shaRes.status === 404) {
-      console.log('ℹ️ File not found. Will create new file.');
+      console.log('ℹ️ main1.dart not found — creating new file.');
     } else {
       const err = await shaRes.text();
       return res.status(500).json({ error: 'Failed to fetch SHA', details: err });
     }
 
-    // ✅ Now try to push (create or update)
     const body = {
-      message: 'Force update lib/main.dart',
+      message: 'Update lib/main1.dart via API',
       content: Buffer.from(code).toString('base64'),
       branch: BRANCH,
-      ...(sha && { sha }) // Include SHA if updating
+      ...(sha && { sha })
     };
 
     const pushRes = await fetch(FILE_URL, {
