@@ -15,22 +15,20 @@ const HEADERS = {
 const getFileUrl = () =>
   `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}?ref=${BRANCH}`;
 
-// Fetch the current file SHA from GitHub
-async function fetchCurrentSha() {
+async function getSha() {
   const res = await fetch(getFileUrl(), { headers: HEADERS });
-  if (res.status === 404) return null; // New file
-  if (!res.ok) throw new Error('Failed to get current file SHA');
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('Failed to get SHA');
   const data = await res.json();
   return data.sha;
 }
 
-// Push (create or update) the file to GitHub
-async function pushToGitHub(code, sha = null) {
+async function pushFile(code, sha = null) {
   const body = {
     message: 'Update main.dart via API',
     content: Buffer.from(code).toString('base64'),
     branch: BRANCH,
-    ...(sha && { sha })
+    ...(sha ? { sha } : {})
   };
 
   const res = await fetch(getFileUrl(), {
@@ -54,28 +52,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    // First attempt
-    let sha = await fetchCurrentSha();
-    let { status, json } = await pushToGitHub(code, sha);
+    let sha = await getSha();
+    let { status, json } = await pushFile(code, sha);
 
-    // If there's a conflict or sha issue, retry once with latest sha
-    if (
-      (status === 422 || status === 409) &&
-      json.message?.includes('sha') &&
-      !req.retry
-    ) {
-      console.warn('Conflict detected. Retrying with latest SHA...');
-      sha = await fetchCurrentSha(); // re-fetch
-      ({ status, json } = await pushToGitHub(code, sha));
+    // Retry once on conflict
+    const isShaConflict =
+      status === 409 ||
+      (status === 422 && json.message?.includes('does not match'));
+
+    if (isShaConflict) {
+      console.warn('SHA conflict. Refetching and retrying...');
+      sha = await getSha(); // refetch updated SHA
+      ({ status, json } = await pushFile(code, sha));
     }
 
     if (status === 200 || status === 201) {
-      return res.status(200).json({ status: 'success', github_url: json.content.html_url });
+      return res.status(200).json({
+        status: 'success',
+        github_url: json.content.html_url
+      });
     } else {
+      console.error('GitHub push failed:', json);
       return res.status(500).json({ error: 'GitHub push failed', details: json });
     }
   } catch (err) {
-    console.error('Unhandled error:', err);
-    return res.status(500).json({ error: 'Unexpected server error', message: err.message });
+    console.error('Unexpected error:', err);
+    return res.status(500).json({ error: 'Server error', message: err.message });
   }
 }
