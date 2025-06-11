@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Only POST allowed' });
   }
 
-  const { code } = req.body;
+  const { code } = req.body || {};
   if (!code) {
     return res.status(400).json({ error: 'Missing Flutter code' });
   }
@@ -26,27 +26,31 @@ export default async function handler(req, res) {
 
   let sha = null;
 
-  // Step 1: Always get the latest SHA first
   try {
-    const shaRes = await fetch(`${FILE_URL}?ref=${BRANCH}`, { headers });
+    // ✅ Get the latest SHA from the correct branch
+    const shaUrl = `${FILE_URL}?ref=${BRANCH}&t=${Date.now()}`;
+    const shaRes = await fetch(shaUrl, { headers });
+
     if (shaRes.ok) {
       const data = await shaRes.json();
       sha = data.sha;
+      console.log('✅ Latest SHA:', sha); // Log the correct SHA
+    } else if (shaRes.status === 404) {
+      console.log('ℹ️ File not found. Will create new file.');
+    } else {
+      const err = await shaRes.text();
+      return res.status(500).json({ error: 'Failed to fetch SHA', details: err });
     }
-  } catch (err) {
-    console.error('SHA fetch failed:', err.message);
-  }
 
-  // Step 2: Push code using that SHA (or create new if no SHA found)
-  const body = {
-    message: 'Update lib/main.dart via API',
-    content: Buffer.from(code).toString('base64'),
-    branch: BRANCH,
-    ...(sha ? { sha } : {})
-  };
+    // ✅ Now try to push (create or update)
+    const body = {
+      message: 'Force update lib/main.dart',
+      content: Buffer.from(code).toString('base64'),
+      branch: BRANCH,
+      ...(sha && { sha }) // Include SHA if updating
+    };
 
-  try {
-    const pushRes = await fetch(`${FILE_URL}`, {
+    const pushRes = await fetch(FILE_URL, {
       method: 'PUT',
       headers,
       body: JSON.stringify(body)
@@ -57,10 +61,11 @@ export default async function handler(req, res) {
     if (pushRes.status === 200 || pushRes.status === 201) {
       return res.status(200).json({ status: 'success', github_url: json.content.html_url });
     } else {
-      console.error('GitHub push failed:', json);
+      console.error('❌ GitHub push failed:', json);
       return res.status(500).json({ error: 'GitHub push failed', details: json });
     }
   } catch (err) {
+    console.error('💥 Unexpected error:', err);
     return res.status(500).json({ error: 'Unexpected error', message: err.message });
   }
 }
