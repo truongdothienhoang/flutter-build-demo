@@ -4,7 +4,7 @@ const fetch = global.fetch || ((...args) =>
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = 'telberiaarbeit';
 const REPO_NAME = 'flutter-build-demo';
-const BRANCH = 'web-build';
+const BRANCH = 'main';
 const FILE_PATH = 'lib/main.dart';
 const FILE_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
 
