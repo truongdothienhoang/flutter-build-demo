@@ -44,7 +44,6 @@ jobs:
           # Copy the /api folder with serverless API routes
           cp -r api web-build/
 
-          cd web-build
           git add --all
           git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
           git push origin main --force
