@@ -31,7 +31,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git clone --depth 1 --branch web-build https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build || \
+          git clone --depth 1 --branch main https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build || \
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build
 
           # Remove only old Flutter web static files (not /api)
@@ -47,4 +47,4 @@ jobs:
           cd web-build
           git add --all
           git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
-          git push origin main --force
+          git push origin web-build --force
