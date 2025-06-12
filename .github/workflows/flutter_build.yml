@@ -13,7 +13,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
 
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -25,29 +24,27 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web --release
 
-      - name: Deploy to root of main branch
+      - name: Prepare deployment branch
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Clone main branch into a temp dir
-          git clone --depth 1 --branch main https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} /tmp/web-root
+          git clone --depth 1 --branch main https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build || \
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build
 
-          cd /tmp/web-root
+          # Remove only old Flutter web static files (not /api)
+          rm -rf web-build/assets web-build/canvaskit web-build/flutter.js web-build/flutter_bootstrap.js web-build/flutter_service_worker.js web-build/index.html
 
-          # Remove old Flutter build files from root
-          rm -rf assets canvaskit flutter.js flutter_bootstrap.js \
-                 flutter_service_worker.js index.html main.dart.js favicon.png icons manifest.json
+          # Copy Flutter web build files
+          cp -r build/web/* web-build/
+          cp -r build/web/* .
 
-          # Copy new Flutter build output to root
-          cp -r $GITHUB_WORKSPACE/build/web/* .
-
-          # Copy /api folder if it exists
-          if [ -d "$GITHUB_WORKSPACE/api" ]; then
-            cp -r $GITHUB_WORKSPACE/api .
-          fi
+          # Copy the /api folder with serverless API routes
+          cp -r api web-build/
+          
+          cd web-build
 
           git add --all
           git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
