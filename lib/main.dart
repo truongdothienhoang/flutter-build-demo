@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const PatrickApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PatrickApp extends StatelessWidget {
+  const PatrickApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Patrick3',
       home: Scaffold(
-        body: Center(
+        appBar: AppBar(
+          title: const Text('Welcome to Patrick3'),
+        ),
+        body: const Center(
           child: Text(
-            'Hello Vene!',
-            style: TextStyle(fontSize: 32),
+            'Hello, this is the Patrick3 app!',
+            style: TextStyle(fontSize: 24),
           ),
         ),
       ),
