@@ -27,8 +27,6 @@ jobs:
       - name: Prepare deployment branch
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
@@ -40,11 +38,13 @@ jobs:
           rm -rf web-build/assets web-build/canvaskit web-build/flutter.js web-build/flutter_bootstrap.js web-build/flutter_service_worker.js web-build/index.html
 
           # Copy Flutter web build files
+          cp -r build/web/* web-build/
           cp -r build/web/* .
 
           # Copy the /api folder with serverless API routes
-          cp -r api .
+          cp -r api web-build/
 
+          cd web-build
           git add --all
           git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
-          git push origin main --force
+          git push origin web-build --force
