@@ -27,7 +27,8 @@ export default async function handler(req, res) {
 
     res.status(200).json({
       status: latestDeployment.state,
-      deploymentUrl: `https://${latestDeployment.url}`,
+      // deploymentUrl: `https://${latestDeployment.url}`,
+      deploymentUrl: "https://flutter-build-demo.vercel.app/",
     });
   } catch (error) {
     console.error('Vercel API error:', error);
