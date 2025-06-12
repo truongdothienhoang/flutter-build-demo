@@ -5,6 +5,7 @@ on:
     branches:
       - web-build
 
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
