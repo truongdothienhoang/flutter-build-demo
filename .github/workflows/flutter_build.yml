@@ -16,7 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'  # or latest stable version from https://docs.flutter.dev/release/whats-new
+          flutter-version: '3.22.0'
 
       - name: Install dependencies
         run: flutter pub get
@@ -24,16 +24,17 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web --release
 
-      - name: Prepare deployment branch
+      - name: Deploy to main branch (replace root with build/web)
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git clone --depth 1 --branch web-build https://github.com/${{ github.repository }} web-build || \
-          git clone https://github.com/${{ github.repository }} web-build
-          rm -rf web-build/*
-          cp -r build/web/* web-build/
+
+          # Clean everything except .git
+          find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+
+          # Copy contents of build/web into root
           cp -r build/web/* .
-          cd web-build
+
           git add --all
-          git commit -m "Deploy Flutter web build from GitHub Actions [skip ci]" || echo "No changes to commit"
-          git push origin web-build --force
+          git commit -m "Deploy Flutter web build to main [skip ci]" || echo "No changes to commit"
+          git push origin main --force
