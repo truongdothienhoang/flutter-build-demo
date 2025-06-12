@@ -3,7 +3,7 @@ name: Flutter Web Build & Deploy
 on:
   push:
     branches:
-      - web-build
+      - main  # Trigger on pushes to main branch
 
 jobs:
   build-and-deploy:
