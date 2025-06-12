@@ -10,14 +10,14 @@ class PatrickApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Patrick7',
+      title: 'Patrick9',
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Welcome to Patrick7'),
+          title: const Text('Welcome to Patrick9'),
         ),
         body: const Center(
           child: Text(
-            'Hello, this is the Patrick7 app!',
+            'Hello, this is the Patrick9 app!',
             style: TextStyle(fontSize: 24),
           ),
         ),
