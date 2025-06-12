@@ -3,7 +3,7 @@ name: Flutter Web Build & Deploy
 on:
   push:
     branches:
-      - main  # Trigger on pushes to main branch
+      - main
 
 jobs:
   build-and-deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.0'
+          flutter-version: '3.22.1'
 
       - name: Install dependencies
         run: flutter pub get
@@ -24,17 +24,27 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web --release
 
-      - name: Deploy to main branch (replace root with build/web)
+      - name: Prepare deployment branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          # Clean everything except .git
-          find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+          git clone --depth 1 --branch web-build https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build || \
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build
 
-          # Copy contents of build/web into root
+          # Remove only old Flutter web static files (not /api)
+          rm -rf web-build/assets web-build/canvaskit web-build/flutter.js web-build/flutter_bootstrap.js web-build/flutter_service_worker.js web-build/index.html
+
+          # Copy Flutter web build files
           cp -r build/web/* .
 
+          # Copy the /api folder with serverless API routes
+          cp -r api .
+
           git add --all
-          git commit -m "Deploy Flutter web build to main [skip ci]" || echo "No changes to commit"
+          git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
           git push origin main --force
