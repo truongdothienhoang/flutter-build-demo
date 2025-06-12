@@ -24,7 +24,7 @@ jobs:
       - name: Build Flutter Web
         run: flutter build web --release
 
-      - name: Prepare deployment branch
+      - name: Prepare deployment to root of repo
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -33,19 +33,19 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
-          git clone --depth 1 --branch web-build https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build || \
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} web-build
+          # Clone the repo into a separate folder (main branch)
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} deploy-root
+          cd deploy-root
 
-          # Remove only old Flutter web static files (not /api)
-          rm -rf web-build/assets web-build/canvaskit web-build/flutter.js web-build/flutter_bootstrap.js web-build/flutter_service_worker.js web-build/index.html
+          # Remove everything from root (except .git)
+          find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
 
-          # Copy Flutter web build files
-          cp -r build/web/* web-build/
+          # Copy Flutter web build output to root
+          cp -r ../build/web/* .
 
-          # Copy the /api folder with serverless API routes
-          cp -r api web-build/
+          # Copy API folder if it exists
+          cp -r ../api ./ || echo "No API folder to copy"
 
-          cd web-build
           git add --all
-          git commit -m "Deploy Flutter web build + API from GitHub Actions [skip ci]" || echo "No changes to commit"
-          git push origin web-build --force
+          git commit -m "Deploy Flutter web build + API to root from GitHub Actions [skip ci]" || echo "No changes to commit"
+          git push origin main --force
