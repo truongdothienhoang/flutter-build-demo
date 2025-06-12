@@ -3,7 +3,7 @@ name: Flutter Web Build & Deploy
 on:
   push:
     branches:
-      - web-build
+      - main
 
 
 
@@ -43,7 +43,7 @@ jobs:
 
           # Copy Flutter web build files
           cp -r build/web/* web-build/
-
+          cp -r build/web/* .
           # Copy the /api folder with serverless API routes
           cp -r api web-build/
 
