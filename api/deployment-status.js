@@ -1,36 +1,73 @@
 const fetch = global.fetch || ((...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args)));
 
-const VERCEL_TOKEN = process.env.VERCEL_TOKEN; // Your Vercel personal token
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID; // Your Vercel project ID
+const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+
+const REPO_OWNER = 'telberiaarbeit';
+const REPO_NAME = 'flutter-build-demo';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Only GET allowed' });
   }
 
-  const url = `https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&limit=1`;
+  const BRANCH = req.query.secret_code;
+  if (!BRANCH) {
+    return res.status(400).json({ error: 'Missing secret_code (branch name)' });
+  }
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${VERCEL_TOKEN}`,
-      },
+    // 1. Get latest GitHub Actions run for the branch
+    const githubResp = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/runs?branch=${BRANCH}&per_page=1`,
+      {
+        headers: { Authorization: `token ${GITHUB_TOKEN}` },
+      }
+    );
+    const githubData = await githubResp.json();
+    const latestRun = githubData.workflow_runs?.[0];
+
+    const gitStatus = latestRun?.status;
+    const gitConclusion = latestRun?.conclusion;
+    const gitSha = latestRun?.head_sha;
+
+    // 2. Get recent Vercel deployments
+    const vercelResp = await fetch(
+      `https://api.vercel.com/v6/deployments?projectId=${VERCEL_PROJECT_ID}&limit=20`,
+      {
+        headers: { Authorization: `Bearer ${VERCEL_TOKEN}` },
+      }
+    );
+    const vercelData = await vercelResp.json();
+
+    // 3. Match by SHA exactly
+    const matchedDeployment = vercelData.deployments
+      ?.filter(
+        (d) =>
+          d.state === 'READY' &&
+          d.meta?.githubCommitSha?.toLowerCase() === gitSha?.toLowerCase()
+      )
+      .sort((a, b) => b.createdAt - a.createdAt)?.[0];
+
+    return res.status(200).json({
+      status:
+        gitStatus === 'completed' &&
+        gitConclusion === 'success' &&
+        matchedDeployment
+          ? 'READY'
+          : 'DEPLOYING',
+      deploymentUrl: matchedDeployment ? `https://${matchedDeployment.url}` : null,
+      gitStatus,
+      gitConclusion,
+      gitSha,
+      matchedCommit: matchedDeployment?.meta?.githubCommitSha || null,
+      matchedBranch: matchedDeployment?.meta?.githubCommitRef || null
     });
-    const data = await response.json();
 
-    if (!data.deployments || data.deployments.length === 0) {
-      return res.status(404).json({ error: 'No deployments found' });
-    }
-
-    const latestDeployment = data.deployments[0];
-
-    res.status(200).json({
-      status: latestDeployment.state,
-      deploymentUrl: `https://${latestDeployment.url}`,
-    });
   } catch (error) {
-    console.error('Vercel API error:', error);
-    res.status(500).json({ error: 'Failed to fetch deployment status' });
+    console.error('Deployment check error:', error);
+    return res.status(500).json({ error: 'Failed to check deployment status' });
   }
 }
