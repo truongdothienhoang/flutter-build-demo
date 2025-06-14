@@ -61,6 +61,7 @@ export default async function handler(req, res) {
       if (!matchedDeployment || matchedDeployment.state === 'ERROR') break;
 
       await delay(5000); // wait 5 seconds before retrying
+      console.log(`Retrying... (${i + 1}/${maxRetries})`);
     }
 
     return res.status(200).json({
