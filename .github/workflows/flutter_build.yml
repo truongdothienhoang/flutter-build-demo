@@ -3,7 +3,7 @@ name: Flutter Web Build & Deploy
 on:
   push:
     branches:
-      - '**'  # Run on all branches
+      - main  # Run on all branches
 
 jobs:
   build-and-deploy:
